@@ -1,0 +1,259 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder Fan Retail Pricing Calculator</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f4f6f8;
+    margin: 0;
+    padding: 24px;
+    color: #1a2332;
+  }
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    overflow: hidden;
+  }
+  header {
+    background: linear-gradient(135deg, #1a3a5c 0%, #2c5f8d 100%);
+    color: #fff;
+    padding: 24px 32px;
+  }
+  header h1 { margin: 0 0 4px; font-size: 22px; font-weight: 600; }
+  header p { margin: 0; opacity: 0.85; font-size: 14px; }
+  .section {
+    padding: 24px 32px;
+    border-bottom: 1px solid #e8ecf1;
+  }
+  .section:last-of-type { border-bottom: none; }
+  .section h2 {
+    margin: 0 0 16px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6b7a8f;
+    font-weight: 600;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 20px;
+  }
+  .field { display: flex; flex-direction: column; }
+  .field label {
+    font-size: 12px;
+    color: #4a5a72;
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+  .field input, .field select {
+    padding: 10px 12px;
+    font-size: 15px;
+    border: 1px solid #d4dae3;
+    border-radius: 6px;
+    background: #fff;
+    transition: border-color 0.15s;
+  }
+  .field input:focus, .field select:focus {
+    outline: none;
+    border-color: #2c5f8d;
+    box-shadow: 0 0 0 3px rgba(44,95,141,0.15);
+  }
+  .results {
+    background: #fafbfd;
+    padding: 24px 32px;
+  }
+  .price-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 16px;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid #e8ecf1;
+  }
+  .price-row:last-child { border-bottom: none; }
+  .price-label { font-weight: 600; font-size: 15px; }
+  .price-sub { font-size: 12px; color: #6b7a8f; margin-top: 2px; }
+  .dealer-net {
+    font-size: 14px;
+    color: #6b7a8f;
+    font-variant-numeric: tabular-nums;
+  }
+  .retail {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a3a5c;
+    font-variant-numeric: tabular-nums;
+    min-width: 110px;
+    text-align: right;
+  }
+  .cost-summary {
+    background: #fff8e1;
+    padding: 16px 32px;
+    font-size: 13px;
+    color: #5a4a1a;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+  }
+  .cost-summary span strong { color: #1a2332; }
+  footer {
+    padding: 16px 32px;
+    font-size: 11px;
+    color: #8a96a8;
+    text-align: center;
+    background: #fafbfd;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Builder Fan Retail Pricing Calculator</h1>
+      <p>Enter cost inputs to compute suggested retail across three margin tiers.</p>
+    </header>
+
+    <div class="section">
+      <h2>Primary Inputs</h2>
+      <div class="grid">
+        <div class="field">
+          <label for="cf">Cubic Feet</label>
+          <input id="cf" type="number" step="0.01" value="1.22">
+        </div>
+        <div class="field">
+          <label for="cost">Average Factory Cost ($)</label>
+          <input id="cost" type="number" step="0.01" value="99.00">
+        </div>
+        <div class="field">
+          <label for="tariff">Tariff</label>
+          <select id="tariff"></select>
+        </div>
+        <div class="field">
+          <label for="duty">Duty (%)</label>
+          <input id="duty" type="number" step="0.1" value="5.1">
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Freight, Shipping & Margins</h2>
+      <div class="grid">
+        <div class="field">
+          <label for="freightRate">Inbound Freight ($/cf)</label>
+          <input id="freightRate" type="number" step="0.01" value="5.00">
+        </div>
+        <div class="field">
+          <label for="shipping">Estimated Shipping ($)</label>
+          <input id="shipping" type="number" step="0.01" value="16.00">
+        </div>
+        <div class="field">
+          <label for="marginNormal">Normal Margin (%)</label>
+          <input id="marginNormal" type="number" step="1" value="50">
+        </div>
+        <div class="field">
+          <label for="marginCommodity">Commodity Margin (%)</label>
+          <input id="marginCommodity" type="number" step="1" value="40">
+        </div>
+        <div class="field">
+          <label for="marginNBT">Next Best Thing Margin (%)</label>
+          <input id="marginNBT" type="number" step="1" value="60">
+        </div>
+      </div>
+    </div>
+
+    <div class="cost-summary">
+      <span>Tariff: <strong id="oTariff">—</strong></span>
+      <span>Duty: <strong id="oDuty">—</strong></span>
+      <span>Freight: <strong id="oFreight">—</strong></span>
+      <span>Landed: <strong id="oLanded">—</strong></span>
+      <span>Total Cost: <strong id="oTotal">—</strong></span>
+    </div>
+
+    <div class="results">
+      <div class="price-row">
+        <div>
+          <div class="price-label">Normal Retail</div>
+          <div class="price-sub">Standard 50% dealer-net margin × 2</div>
+        </div>
+        <div class="dealer-net">DN: <span id="dnNormal">—</span></div>
+        <div class="retail" id="retailNormal">—</div>
+      </div>
+      <div class="price-row">
+        <div>
+          <div class="price-label">Commodity Retail</div>
+          <div class="price-sub">Lower 40% margin × 2</div>
+        </div>
+        <div class="dealer-net">DN: <span id="dnCommodity">—</span></div>
+        <div class="retail" id="retailCommodity">—</div>
+      </div>
+      <div class="price-row">
+        <div>
+          <div class="price-label">Next Best Thing Retail</div>
+          <div class="price-sub">Premium 60% margin × 2</div>
+        </div>
+        <div class="dealer-net">DN: <span id="dnNBT">—</span></div>
+        <div class="retail" id="retailNBT">—</div>
+      </div>
+    </div>
+
+    <footer>Logic mirrors Builder Fans tab • Exact math, no rounding</footer>
+  </div>
+
+<script>
+  const tariffSel = document.getElementById('tariff');
+  for (let i = 0; i <= 100; i += 5) {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = i + '%';
+    if (i === 10) opt.selected = true;
+    tariffSel.appendChild(opt);
+  }
+
+  const $ = id => document.getElementById(id);
+  const fmt = n => '$' + n.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+  function calc() {
+    const cf       = parseFloat($('cf').value)            || 0;
+    const cost     = parseFloat($('cost').value)          || 0;
+    const tariffPct= parseFloat($('tariff').value)        || 0;
+    const dutyPct  = parseFloat($('duty').value)          || 0;
+    const frRate   = parseFloat($('freightRate').value)   || 0;
+    const ship     = parseFloat($('shipping').value)      || 0;
+    const mN       = parseFloat($('marginNormal').value)  || 0;
+    const mC       = parseFloat($('marginCommodity').value)|| 0;
+    const mB       = parseFloat($('marginNBT').value)     || 0;
+
+    const tariff  = cost * (tariffPct / 100);
+    const duty    = cost * (dutyPct / 100);
+    const freight = cf * frRate;
+    const landed  = cost + tariff + duty + freight;
+    const total   = landed + ship;
+
+    $('oTariff').textContent  = fmt(tariff);
+    $('oDuty').textContent    = fmt(duty);
+    $('oFreight').textContent = fmt(freight);
+    $('oLanded').textContent  = fmt(landed);
+    $('oTotal').textContent   = fmt(total);
+
+    [['Normal', mN], ['Commodity', mC], ['NBT', mB]].forEach(([key, m]) => {
+      const dn = total / (1 - m / 100);
+      $('dn' + key).textContent     = fmt(dn);
+      $('retail' + key).textContent = fmt(dn * 2);
+    });
+  }
+
+  document.querySelectorAll('input, select').forEach(el => el.addEventListener('input', calc));
+  calc();
+</script>
+</body>
+</html>
+```
