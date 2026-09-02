@@ -328,7 +328,7 @@
   const DEFAULTS = {
     cf: 1.22,
     cost: 99.00,
-    tariff: 10,
+    tariff: 13,
     duty: 5.1,
     freightRate: 5.00,
     shipping: 16.00,
@@ -338,12 +338,16 @@
   };
 
   const tariffSel = document.getElementById('tariff');
-  for (let i = 0; i <= 100; i += 5) {
+  const tariffRates = [...new Set([
+    ...Array.from({length: 21}, (_, i) => i * 5),
+    DEFAULTS.tariff
+  ])].sort((a, b) => a - b);
+  tariffRates.forEach(rate => {
     const opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = i + '%';
+    opt.value = rate;
+    opt.textContent = rate + '%';
     tariffSel.appendChild(opt);
-  }
+  });
 
   const $ = id => document.getElementById(id);
   const fmt = n => '$' + n.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
